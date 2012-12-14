@@ -9,7 +9,7 @@ http://www.ipipan.waw.pl/~wolinski/
 
 Morfeusz-Java bridge Copyright (c) 2005-2008 by Dawid Weiss
 
-***
+---
  NOTE THAT THIS BINDING'S BINARY RELEASES DO NOT CONTAIN
             MORFEUSZ IN BINARY DISTRIBUTION
 
@@ -20,15 +20,19 @@ compiled against (it may, or may not work with newer
 Morfeusz releases).
 
 http://sgjp.pl/morfeusz/
-***
+---
 
 Once you download Morfeusz's libraries and make them available
 to your system, the following command should work and display
 Morfeusz DLL/ JNI bridge's DLL versions:
 
-    java -jar MorfeuszJavaBridge.jar -version
+```bash
+java -jar MorfeuszJavaBridge.jar -version
+```
 
 The command-line demo application simply processes the input
 tokens and displays their analysis. Example:
 
-    java -jar MorfeuszJavaBridge.jar -encoding Cp1250 input.txt output.txt  
+```bash
+java -jar MorfeuszJavaBridge.jar -encoding Cp1250 input.txt output.txt  
+```
