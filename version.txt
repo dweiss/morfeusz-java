@@ -1,0 +1,9 @@
+
+#
+# Morfeusz-to-Java version and copyright property file. DO NOT CHANGE.
+#
+
+copyclause=Morfeusz-Java bridge Copyright (c) 2005-2008 Dawid Weiss
+
+# major, minor (compatible), bugfix release.
+version=1.2.3

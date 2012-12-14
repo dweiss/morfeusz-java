@@ -1,0 +1,65 @@
+
+BUILDING FROM SOURCES
+---------------------
+
+You'll need the following:
+
+	- JDK (Java Development Kit)
+	- Apache ANT, http://ant.apache.org
+	- (see "Platform-specific considerations" section below for additional)
+
+Use Apache ANT to build the binding code from sources. 
+The following command should build binaries and place them in 'tmp/dist'
+folder:
+
+ant build
+
+
+TESTING THE DISTRIBUTION
+------------------------
+
+Use 'test' target to test the binding.
+
+ant test
+
+
+PLATFORM-SPECIFIC CONSIDERATIONS
+--------------------------------
+
+Windows:
+
+	Place the following files, distributed with Morfeusz, in directory 
+	"morfeusz":
+
+		morfeusz.dll
+		morfeusz.def
+		morfeusz.h
+
+	You will need MinGW suite (http://www.mingw.org/) installed.
+	PATH variable should include 'bin' folder under MinGW's installation.
+
+	More technically, g++ is used to compile the JNI code required for 
+	Windows so it needs to be found on your PATH.
+	
+Linux:
+
+	Place the following files, distributed with Morfeusz, in directory 
+	"morfeusz":
+
+		libmorfeusz.so
+		morfeusz.h
+		morfeusz.def
+		
+	All tests should now pass and the project should compile cleanly. Keep
+	in mind that Linux runtime requires libraries to be stored somewhere where
+	the runtime can find them (alternatively, use LD_LIBRARY_PATH to point
+	to a folder where you have the binaries).
+
+
+COMMENTS, BUG REPORTS
+---------------------
+
+Send them to: dawid.weiss@cs.put.poznan.pl
+
+PLEASE NOTE THAT I AM NOT RESPONSIBLE, NOR ABLE TO FIX, ANY BUGS IN MORFEUSZ.
+Please contact Marcin Wolinski directly if you encounter any.

@@ -1,0 +1,26 @@
+Version 1.2.3:
+ + Update to the newest Morfeusz version (20080127).
+
+Version 1.2.2:
+ + Update to the newest Morfeusz version.
+
+Version 1.2.1:
+ + Update to the newest Morfeusz version.
+ + Morfeusz glue code rewritten to use UTF-8 directly on the edge between
+   morfeusz native code and Java. Byte-based methods are now deprecated
+   and will be removed in the future release.
+
+Version 1.1.2:
+ + Build file no longer breaks on Windows on <symlink> task.
+ + JDK1.5 warnings removed.
+ + Update to the newest Morfeusz version.
+
+Version 1.1.1:
+
+ + Added final fields for optimized performance.
+ + Added contained() method for tag-equality testing.
+ + Added a specific runtime exception for tag parser failures.
+ 
+ + Morfeusz DLLs upgrade
+
+ + This file added.

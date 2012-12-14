@@ -1,0 +1,268 @@
+
+
+<project name="Morfeusz-Java Bridge" default="all">
+    
+    <property name="build.dir" location="tmp" />
+    <property name="compiler.name" value="gcc" />
+
+    <path id="libs">
+        <fileset dir="lib-test" includes="**/*.jar" />
+    </path>
+    
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath refid="libs" />
+    </taskdef>    
+
+    <target name="all" depends="clean,test,dist" />
+    
+    <target name="dist" depends="build, morfeusz">
+        <echo message="Tarring distribution for: ${os.name}-${os.arch}" />
+        <echo file="${build.dir}/dist/version.txt">${morfeusz.ver}</echo>
+        <zip update="false"
+            zipfile="${build.dir}/morfeusz-java-${os.name}-${os.arch}.zip">
+            <zipfileset dir="${build.dir}/dist" />
+            <zipfileset dir="." prefix="source/">
+                <include name="lib-test/**" />
+                <include name="src*/**" />
+                <include name="morfeusz/version.txt" />
+                <include name="build.xml" />
+                <include name="*.txt" />
+                <exclude name="version.txt" />
+            </zipfileset>
+        </zip>
+    </target>
+
+    <target name="morfeusz" depends="assemble-tests,build">
+        <java classname="com.dawidweiss.morfeusz.MorfeuszDemo" dir="${build.dir}/jni-testdir"
+              failonerror="true" fork="true" output="${build.dir}/morfeusz.ver">
+            <env key="LD_LIBRARY_PATH" file="${build.dir}/jni-testdir" />
+            <sysproperty key="java.library.path" path="${build.dir}/jni-testdir" />
+    
+            <classpath>
+                <path refid="libs" />
+                <pathelement location="${build.dir}/dist/MorfeuszJavaBridge.jar" />
+            </classpath>
+            
+            <arg value="-version" />
+        </java>
+        <loadfile failonerror="true" srcfile="${build.dir}/morfeusz.ver" property="morfeusz.ver" />
+        <delete failonerror="true" file="${build.dir}/morfeusz.ver" quiet="true" />
+        
+        <echo>${morfeusz.ver}</echo>
+    </target>
+
+    <target name="build" depends="compile">
+    	<mkdir dir="${build.dir}/dist" />
+    	<property file="version.txt" />
+		<jar jarfile="${build.dir}/dist/MorfeuszJavaBridge.jar">
+			<fileset dir="${build.dir}/classes" />
+			<manifest>
+				<attribute name="Built-By" value="${user.name}"/>
+				<attribute name="Main-class" value="com.dawidweiss.morfeusz.MorfeuszDemo"/>
+				<attribute name="version" value="${version}" />
+				<attribute name="svn-id" value="${svnid}" />
+			</manifest>
+            <zipfileset file="version.txt" fullpath="res/version.txt" />
+		</jar>
+		<copy todir="${build.dir}/dist">
+			<fileset dir="${build.dir}/jni" />
+			<fileset dir=".">
+                <include name="readme.txt" />
+            </fileset>
+		</copy>
+    </target>
+
+    <target name="compile" depends="compile-java,compile-jni-headers,compile-jni">
+    </target>
+
+    <target name="compile-java">
+        <mkdir dir="${build.dir}/classes" />
+        <javac destdir="${build.dir}/classes"
+               failonerror="true" debug="true" optimize="true"
+               includeantruntime="false" includejavaruntime="false" encoding="UTF-8"
+               source="1.4" target="1.4">
+            <src location="src" />
+        </javac>
+    </target>
+
+    <target name="compile-tests">
+        <mkdir dir="${build.dir}/test" />
+        <javac destdir="${build.dir}/test"
+               failonerror="true" debug="true" optimize="true"
+               includeantruntime="false" includejavaruntime="false" encoding="UTF-8"
+               source="1.4" target="1.4">
+            <classpath>
+                <pathelement location="${build.dir}/classes" />
+                <path refid="libs" />                
+            </classpath>
+            <src location="src-test" />
+        </javac>
+    	<copy todir="${build.dir}/test">
+    		<fileset dir="src-test">
+    			<exclude name="**/*.java" />
+	    	</fileset>
+    	</copy>
+    </target>
+
+    <target name="compile-jni-headers" depends="compile-java">
+        <mkdir dir="${build.dir}/jni-headers" />
+        <javah class="com.dawidweiss.morfeusz.Morfeusz"
+               destdir="${build.dir}/jni-headers">
+            <classpath>
+                <path location="${build.dir}/classes" />
+            </classpath>
+        </javah>
+
+        <javah class="com.dawidweiss.morfeusz.Analyzer"
+               destdir="${build.dir}/jni-headers">
+            <classpath>
+                <path location="${build.dir}/classes" />
+            </classpath>
+        </javah>
+    </target>
+
+
+    <target name="compile-jni">
+        <mkdir dir="${build.dir}/jni" />
+        
+        <property environment="env"/>
+
+        <condition  property="shared.library.prefix" value="">
+                <os family="windows"/>
+        </condition>
+        <condition  property="shared.library.prefix" value="lib">
+                <os family="unix"/>
+        </condition>
+
+        <condition  property="executable.file.extension" value=".exe">
+                <os family="windows"/>
+        </condition>
+        <condition  property="executable.file.extension" value="">
+                <os family="unix"/>
+        </condition>
+        
+        <condition  property="shared.library.extension" value=".dll">
+                <os family="windows"/>
+        </condition>
+        <condition  property="shared.library.extension" value=".so">
+                <os family="unix"/>
+        </condition>
+
+        <condition  property="os.dep.link" value="-Wl,--kill-at -Wl,--strip-all">
+                <os family="windows"/>
+        </condition>
+        <condition  property="os.dep.link" value="">
+                <os family="unix"/>
+        </condition>
+
+        <condition property="compiler.available" value="true">
+            <or>
+                <and>
+                    <os family="windows"/>
+                    <available file="${compiler.name}${executable.file.extension}" filepath="${env.Path}" />
+                </and>
+                <and>
+                    <os family="unix"/>
+                    <available file="${compiler.name}${executable.file.extension}" filepath="${env.PATH}" />
+                </and>
+            </or>
+        </condition>
+        
+        <fail message="Cannot find compiler: ${compiler.name}${executable.file.extension}"
+              unless="compiler.available" />
+
+        <condition property="jni-headers.available" value="true">
+            <available file="${env.JAVA_HOME}/include/jni.h" />
+        </condition>
+
+        <fail message="jni.h not found in ${env.JAVA_HOME}/include/jni.h"
+              unless="jni-headers.available" />
+
+        <exec executable="${compiler.name}${executable.file.extension}"
+              dir="${build.dir}/jni" failonerror="true" vmlauncher="true">
+              
+              <arg value="-I" /><arg path="morfeusz" />
+              <arg value="-I" /><arg path="${build.dir}/jni-headers" />
+              <arg value="-I" /><arg path="${env.JAVA_HOME}/include" />
+              <arg value="-I" /><arg path="${env.JAVA_HOME}/include/win32" />
+              <arg value="-I" /><arg path="${env.JAVA_HOME}/include/linux" />
+
+              <arg value="-L" /><arg path="morfeusz" />
+              <arg value="-l"/><arg value="morfeusz" />
+
+              <arg line="-shared ${os.dep.link}" />
+              <arg value="-m32" /><!-- Morfeusz is distributed in 32-bit version only -->
+              <arg value="-o" /><arg file="${build.dir}/jni/${shared.library.prefix}morfeusz-java${shared.library.extension}" />
+
+              <arg file="src-jni/Analyzer.c" />
+              <arg file="src-jni/Morfeusz.c" />
+        </exec>
+    </target>
+
+
+    <target name="clean">
+        <delete dir="${build.dir}" />
+    </target>
+
+
+    <target name="signatures">
+        <exec executable="javap.exe">
+            <arg line="-p -s" />
+            <arg value="-classpath" />
+            <arg path="${build.dir}/classes" />
+            <arg value="com.dawidweiss.morfeusz.InterpMorf" />
+        </exec>
+    </target>
+
+
+    <target name="assemble-tests" depends="compile,compile-tests">
+        <mkdir dir="${build.dir}/jni-testdir" />
+        <copy filtering="false" flatten="true" todir="${build.dir}/jni-testdir">
+            <fileset dir="morfeusz">
+                <include name="*.dll" />
+                <include name="*.so*" />
+            </fileset>
+        </copy>
+        <copy filtering="false" flatten="true" todir="${build.dir}/jni-testdir">
+            <fileset dir="${build.dir}/jni">
+                <include name="*.dll" />
+                <include name="*.so*" />
+            </fileset>
+        </copy>
+    	<delete failonerror="false" >
+    		<fileset dir="${build.dir}/jni-testdir">
+    			<include name="libmorfeusz.so.0*" />
+    		</fileset>
+    	</delete>
+    	<if><not><os family="windows"/></not>
+    		<then>
+        	<symlink action="single" link="${build.dir}/jni-testdir/libmorfeusz.so.0" resource="${build.dir}/jni-testdir/libmorfeusz.so" failonerror="false" />
+        	</then>
+      	</if>
+    </target>
+
+
+    <target name="test" depends="compile,compile-tests,assemble-tests">
+        <junit dir="${build.dir}/jni-testdir" fork="true"
+        	   haltonerror="true" haltonfailure="true" printsummary="false">
+            <env key="LD_LIBRARY_PATH" file="${build.dir}/jni-testdir" />
+
+            <classpath>
+                <pathelement path="${build.dir}/classes" />
+                <pathelement path="${build.dir}/test" />
+                <path refid="libs" />                
+            </classpath>
+            
+            <formatter type="plain" usefile="false" />
+
+            <sysproperty key="java.library.path" path="${build.dir}/jni-testdir" />
+            
+            <batchtest>
+                <fileset dir="${build.dir}/test">
+                    <include name="**/*Test.class" />
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+</project>
