@@ -188,14 +188,14 @@
               <arg value="-I" /><arg path="${env.JAVA_HOME}/include/linux" />
 
               <arg value="-L" /><arg path="morfeusz" />
-              <arg value="-l"/><arg value="morfeusz" />
+              <arg value="-fPIC" />
 
               <arg line="-shared ${os.dep.link}" />
-              <arg value="-m32" /><!-- Morfeusz is distributed in 32-bit version only -->
               <arg value="-o" /><arg file="${build.dir}/jni/${shared.library.prefix}morfeusz-java${shared.library.extension}" />
 
               <arg file="src-jni/Analyzer.c" />
               <arg file="src-jni/Morfeusz.c" />
+              <arg value="-l"/><arg value="morfeusz" />
         </exec>
     </target>
 
